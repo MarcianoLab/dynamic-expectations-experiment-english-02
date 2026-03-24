@@ -1,4 +1,4 @@
-class DiceGame {
+var DiceGame = class DiceGame {
     constructor() {
         this.NUM_OF_DICE = 6;
         this.NUM_OF_GAMES = 10;

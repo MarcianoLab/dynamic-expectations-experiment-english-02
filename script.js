@@ -1,8 +1,7 @@
 class DiceGame {
     constructor() {
-        this.IS_REAL = false;
         this.NUM_OF_DICE = 6;
-        this.NUM_OF_GAMES = 5;
+        this.NUM_OF_GAMES = 10;
         this.CURRENT_SUM = 0;
         this.GAME_LIST = [];
         this.CURRENT_GAME = {};
@@ -46,13 +45,33 @@ class DiceGame {
 
     initGameArray(isPractice) {
         if (isPractice) {
-            this.GAME_LIST = [PRACTICE_GAME];
+            this.GAME_LIST = [{ ...PRACTICE_GAME, id: "practice", isPredefined: true }];
             this.CURRENT_GAME = this.GAME_LIST[0];
             return;
         }
-        this.GAME_LIST = this.IS_REAL
-            ? this.createGameArray(this.NUM_OF_GAMES, this.NUM_OF_DICE)
-            : _.shuffle(PREPARED_GAME_LIST);
+
+        const preparedGames = PREPARED_GAME_LIST.map(game => ({
+            ...game,
+            isPredefined: true
+        }));
+        
+        let randomGames = [];
+        const numRandomGames = this.NUM_OF_GAMES - preparedGames.length;
+        
+        if (numRandomGames > 0) {
+            randomGames = this.createGameArray(numRandomGames, this.NUM_OF_DICE, preparedGames.length).map(game => ({
+                ...game,
+                isPredefined: false
+            }));
+        }
+
+        let combinedList = _.shuffle([...preparedGames, ...randomGames]);
+
+        this.GAME_LIST = combinedList.map((game, index) => ({
+            ...game,
+            id: `game${index + 1}`
+        }));
+
         this.CURRENT_GAME = this.GAME_LIST[0];
     }
 
@@ -71,6 +90,7 @@ class DiceGame {
         const gameId = this.CURRENT_GAME.id;
         this.GAME_DATA[gameId] = {
             gameId: gameId,
+            isPredefined: this.CURRENT_GAME.isPredefined,
             diceResults: this.CURRENT_GAME.diceResults,
             probabilities: [],
         };
@@ -587,7 +607,7 @@ class DiceGame {
         return parent;
     }
 
-    createGameArray(numOfGames, numOfDice) {
+    createGameArray(numOfGames, numOfDice, startId = 0) {
         const numArray = [];
         const diceArray = [];
         for (let i = 0; i < numOfGames; i++) {
@@ -603,7 +623,7 @@ class DiceGame {
             });
 
             return {
-                id: `game${num + 1}`,
+                id: `game${startId + num + 1}`,
                 diceResults: diceResults,
             };
         });

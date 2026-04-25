@@ -3,14 +3,17 @@ var DiceGame = class DiceGame {
         this.NUM_OF_DICE = 6;
         this.NUM_OF_GAMES = 10;
         this.CURRENT_SUM = 0;
+        this.TOTAL_WINS = 0;
         this.GAME_LIST = [];
         this.CURRENT_GAME = {};
         this.GAME_DATA = {};
         this.IS_STARTED = false;
+        this.HEBREW = HEBREW;
+        this.TEXT = this.HEBREW ? UI_TEXT.he : UI_TEXT.en;
         this.startTime = 0;
         this.endTime = 0;
         this.app = this.createGeneralElement("div", ["app"], "app");
-        this.app.setAttribute("dir", "ltr");
+        this.applyLanguageSettings();
 
         const body = document.querySelector("body");
         body.append(this.app);
@@ -41,6 +44,20 @@ var DiceGame = class DiceGame {
             skinInner.style.padding = "0";
             skinInner.style.margin = "0";
         }
+    }
+
+    applyLanguageSettings() {
+        const direction = this.HEBREW ? "rtl" : "ltr";
+
+        this.app.setAttribute("dir", direction);
+        this.app.style.direction = direction;
+        this.app.classList.toggle("hebrew", this.HEBREW);
+
+        document.body.setAttribute("dir", direction);
+        document.body.style.direction = direction;
+
+        document.documentElement.lang = this.HEBREW ? "he" : "en";
+        document.documentElement.dir = direction;
     }
 
     initGameArray(isPractice) {
@@ -102,7 +119,7 @@ var DiceGame = class DiceGame {
             return this.createDiceElement(num);
         });
         this.startTime = performance.now();
-        const rollBtn = this.createButton("roll", ["roll"], "Roll Dice");
+        const rollBtn = this.createButton("roll", ["roll"], this.TEXT.rollDice);
         rollBtn.addEventListener("click", () => {
             this.endTime = performance.now();
             const rt = this.endTime - this.startTime;
@@ -199,6 +216,9 @@ var DiceGame = class DiceGame {
             [className],
             className + id
         );
+        if (containerType === "wide") {
+            container.style.direction = this.HEBREW ? "rtl" : "ltr";
+        }
         return container;
     }
 
@@ -233,7 +253,7 @@ var DiceGame = class DiceGame {
                 ["chance-text"],
                 `chance-text-${id}`
             );
-            chanceText.innerHTML = "Current winning<br>chance";
+            chanceText.innerHTML = this.TEXT.currentWinningChance;
             chanceText.style.fontSize = "17px";
             chanceText.style.marginBottom = "10px"
 
@@ -346,7 +366,7 @@ var DiceGame = class DiceGame {
             ["dice", "circle"],
             "pre-start-circle"
         );
-        circle.innerText = "Pre-start";
+        circle.innerText = this.TEXT.preStart;
 
         const { progressWrapper, progress, progressText } = this.createProgressBar("pre-start", true);
 
@@ -355,7 +375,11 @@ var DiceGame = class DiceGame {
         longContainer.append(container);
         this.addCurrentScore("pre-start", longContainer, "visible");
 
-        longContainer.style.marginRight = "20px";
+        if (this.HEBREW) {
+            longContainer.style.marginLeft = "20px";
+        } else {
+            longContainer.style.marginRight = "20px";
+        }
 
         const initialProbability = this.calculateProbability(0, this.NUM_OF_DICE) * 100;
         const maxHeight = window.innerHeight * 0.0035;
@@ -436,10 +460,11 @@ var DiceGame = class DiceGame {
         let resultText;
         let resultTextColor;
         if (isWin) {
-            resultText = "You Won!"
+            this.TOTAL_WINS += 1;
+            resultText = this.TEXT.youWon;
             resultTextColor = "#012060"
         } else {
-            resultText = "You Lose!"
+            resultText = this.TEXT.youLose;
             resultTextColor = "#012060"
         }
 
@@ -464,6 +489,7 @@ var DiceGame = class DiceGame {
 
         this.GAME_DATA[gameId].sum = this.CURRENT_SUM;
         this.GAME_DATA[gameId].result = isWin ? "win" : "loss";
+        this.GAME_DATA[gameId].totalWins = this.TOTAL_WINS;
 
         this.IS_STARTED = false;
 
@@ -497,7 +523,7 @@ var DiceGame = class DiceGame {
             "slider-parent"
         );
         const title = this.createGeneralElement("h2", [], "slider-title");
-        title.textContent = "How satisfied are you at this moment?";
+        title.textContent = this.TEXT.satisfiedQuestion;
 
         const sliderContainer = this.createGeneralElement(
             "div",
@@ -514,9 +540,9 @@ var DiceGame = class DiceGame {
         const sliderElements = [
             track,
             this.createCircle("black", "0%"),
-            this.createLabel("Very dissatisfied", "0%"),
+            this.createLabel(this.TEXT.veryDissatisfied, "0%"),
             this.createCircle("black", "100%"),
-            this.createLabel("Very satisfied", "100%"),
+            this.createLabel(this.TEXT.verySatisfied, "100%"),
             thumb,
         ];
 
@@ -529,7 +555,7 @@ var DiceGame = class DiceGame {
             ["roll"],
             "continueBtn"
         );
-        button.textContent = "Continue";
+        button.textContent = this.TEXT.continue;
         button.disabled = true;
 
         const reminder = this.createGeneralElement(
@@ -537,8 +563,7 @@ var DiceGame = class DiceGame {
             ["reminder"],
             "reminderText"
         );
-        reminder.textContent =
-            "Please move the slider according to the instructions";
+        reminder.textContent = this.TEXT.sliderReminder;
 
         const elements = [title, sliderContainer, button, reminder];
         elements.forEach((element) => {
@@ -601,6 +626,9 @@ var DiceGame = class DiceGame {
             Object.keys(currentGame).forEach((data) => {
                 this.writeToLogs(`${gameId}-${data}`, currentGame[data]);
             });
+            if (this.GAME_LIST.length === 1) {
+                this.writeToLogs("totalWins", this.TOTAL_WINS);
+            }
             this.startNextGame();
         });
 
@@ -673,7 +701,7 @@ var DiceGame = class DiceGame {
         const continueButton = this.createButton(
             "close",
             ["modal-btn"],
-            "Continue"
+            this.TEXT.continue
         );
         continueButton.addEventListener("click", () => {
             modal.classList.remove("open");

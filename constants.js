@@ -1,4 +1,4 @@
-var HEBREW = false;
+var HEBREW = true;
 
 var UI_TEXT = {
     en: {

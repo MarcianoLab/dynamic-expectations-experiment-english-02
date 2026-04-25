@@ -27,7 +27,7 @@ var UI_TEXT = {
         preStart: "טרום משחק",
         youWon: "ניצחת!",
         youLose: "הפסדת!",
-        satisfiedQuestion: "?כמה את/ה מרוצה כרגע?",
+        satisfiedQuestion: "כמה את/ה מרוצה כרגע?",
         veryDissatisfied: "מאוד לא מרוצה",
         verySatisfied: "מאוד מרוצה",
         continue: "המשך/י",

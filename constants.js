@@ -6,7 +6,7 @@ var GAME_5 = { diceResults: [3, 4, 5, 1, 3, 6] };
 var PRACTICE_GAME = { diceResults: [6, 1, 3, 4, 1, 2] };
 var PREPARED_GAME_LIST = [GAME_1, GAME_2, GAME_3, GAME_4];
 
-var HEBREW = true;
+var HEBREW = false;
 
 var UI_TEXT = {
     en: {

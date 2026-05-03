@@ -1,7 +1,7 @@
 var DiceGame = class DiceGame {
     constructor() {
         this.NUM_OF_DICE = 6;
-        this.NUM_OF_GAMES = 10;
+        this.NUM_OF_GAMES = 12;
         this.CURRENT_SUM = 0;
         this.TOTAL_WINS = 0;
         this.GAME_LIST = [];

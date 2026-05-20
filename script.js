@@ -98,25 +98,44 @@ var DiceGame = class DiceGame {
         this.playTone(125, 0.13, 0.08, 0.04, "square");
     }
 
+    playChanceSound(probability) {
+        if (!this.ENABLE_GAME_SOUNDS) return;
+
+        const chance = Math.max(0, Math.min(100, probability));
+
+        if (chance >= 80) {
+            this.playTone(659.25, 0, 0.08, 0.07);
+            this.playTone(783.99, 0.08, 0.09, 0.075);
+            this.playTone(987.77, 0.17, 0.12, 0.08);
+        } else if (chance >= 60) {
+            this.playTone(523.25, 0, 0.08, 0.065);
+            this.playTone(659.25, 0.09, 0.1, 0.07);
+        } else if (chance >= 40) {
+            this.playTone(440, 0, 0.07, 0.055, "triangle");
+            this.playTone(493.88, 0.08, 0.08, 0.055, "triangle");
+        } else if (chance >= 20) {
+            this.playTone(392, 0, 0.1, 0.06, "triangle");
+            this.playTone(329.63, 0.1, 0.12, 0.06, "triangle");
+        } else {
+            this.playTone(293.66, 0, 0.13, 0.07, "sawtooth");
+            this.playTone(220, 0.13, 0.18, 0.065, "sawtooth");
+        }
+    }
+
     playResultSound(isWin) {
         if (!this.ENABLE_GAME_SOUNDS) return;
 
         if (isWin) {
-            this.playTone(523.25, 0, 0.12, 0.12);
-            this.playTone(659.25, 0.12, 0.12, 0.12);
-            this.playTone(783.99, 0.24, 0.22, 0.14);
+            this.playTone(523.25, 0, 0.08, 0.1);
+            this.playTone(659.25, 0.08, 0.08, 0.11);
+            this.playTone(783.99, 0.16, 0.1, 0.12);
+            this.playTone(1046.5, 0.27, 0.16, 0.14);
+            this.playTone(1318.51, 0.37, 0.22, 0.1);
         } else {
-            this.playTone(329.63, 0, 0.16, 0.11, "triangle");
-            this.playTone(246.94, 0.16, 0.18, 0.1, "triangle");
-            this.playTone(196, 0.34, 0.28, 0.1, "triangle");
+            this.playTone(293.66, 0, 0.2, 0.1, "triangle");
+            this.playTone(246.94, 0.18, 0.24, 0.095, "triangle");
+            this.playTone(196, 0.4, 0.35, 0.085, "triangle");
         }
-    }
-
-    playSliderReadySound() {
-        if (!this.ENABLE_GAME_SOUNDS) return;
-
-        this.playTone(440, 0, 0.05, 0.055);
-        this.playTone(587.33, 0.06, 0.06, 0.055);
     }
 
     hideQualtricsElements() {
@@ -534,6 +553,7 @@ var DiceGame = class DiceGame {
                 const currentGame = this.GAME_DATA[gameId];
                 currentGame.probabilities.push(Math.round(probability));
                 rollBtn.disabled = false;
+                this.playChanceSound(probability);
 
                 // Hide all other progress texts
                 document.querySelectorAll('.progress-text').forEach(el => {
@@ -688,7 +708,6 @@ var DiceGame = class DiceGame {
                 button.disabled = false;
                 reminder.style.display = "none";
                 clearTimeout(reminderTimeout);
-                this.playSliderReadySound();
             }
 
             const rect = sliderContainer.getBoundingClientRect();

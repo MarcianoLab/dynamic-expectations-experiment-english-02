@@ -8,6 +8,8 @@ var DiceGame = class DiceGame {
         this.CURRENT_GAME = {};
         this.GAME_DATA = {};
         this.IS_STARTED = false;
+        this.ENABLE_GAME_SOUNDS = ENABLE_GAME_SOUNDS;
+        this.audioContext = null;
         this.HEBREW = HEBREW;
         this.TEXT = this.HEBREW ? UI_TEXT.he : UI_TEXT.en;
         this.startTime = 0;
@@ -19,6 +21,102 @@ var DiceGame = class DiceGame {
         body.append(this.app);
         
         this.hideQualtricsElements();
+    }
+
+    getAudioContext() {
+        if (!this.ENABLE_GAME_SOUNDS) return null;
+
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return null;
+
+        if (!this.audioContext) {
+            this.audioContext = new AudioContextClass();
+        }
+
+        if (this.audioContext.state === "suspended") {
+            this.audioContext.resume();
+        }
+
+        return this.audioContext;
+    }
+
+    playTone(frequency, startTime, duration, volume, type = "sine") {
+        const audioContext = this.getAudioContext();
+        if (!audioContext) return;
+
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        const now = audioContext.currentTime + startTime;
+        const endTime = now + duration;
+
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, now);
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.exponentialRampToValueAtTime(volume, now + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.001, endTime);
+
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start(now);
+        oscillator.stop(endTime + 0.02);
+    }
+
+    playRollSound() {
+        if (!this.ENABLE_GAME_SOUNDS) return;
+
+        const audioContext = this.getAudioContext();
+        if (!audioContext) return;
+
+        const bufferSize = audioContext.sampleRate * 0.22;
+        const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+        const output = buffer.getChannelData(0);
+
+        for (let i = 0; i < bufferSize; i++) {
+            const fade = 1 - i / bufferSize;
+            output[i] = (Math.random() * 2 - 1) * fade * 0.22;
+        }
+
+        const noise = audioContext.createBufferSource();
+        const filter = audioContext.createBiquadFilter();
+        const gain = audioContext.createGain();
+
+        noise.buffer = buffer;
+        filter.type = "bandpass";
+        filter.frequency.setValueAtTime(700, audioContext.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(180, audioContext.currentTime + 0.22);
+        gain.gain.setValueAtTime(0.18, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.22);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioContext.destination);
+        noise.start();
+        noise.stop(audioContext.currentTime + 0.24);
+
+        this.playTone(170, 0.03, 0.08, 0.05, "square");
+        this.playTone(125, 0.13, 0.08, 0.04, "square");
+    }
+
+    playResultSound(isWin) {
+        if (!this.ENABLE_GAME_SOUNDS) return;
+
+        if (isWin) {
+            this.playTone(523.25, 0, 0.12, 0.12);
+            this.playTone(659.25, 0.12, 0.12, 0.12);
+            this.playTone(783.99, 0.24, 0.22, 0.14);
+        } else {
+            this.playTone(329.63, 0, 0.16, 0.11, "triangle");
+            this.playTone(246.94, 0.16, 0.18, 0.1, "triangle");
+            this.playTone(196, 0.34, 0.28, 0.1, "triangle");
+        }
+    }
+
+    playSliderReadySound() {
+        if (!this.ENABLE_GAME_SOUNDS) return;
+
+        this.playTone(440, 0, 0.05, 0.055);
+        this.playTone(587.33, 0.06, 0.06, 0.055);
     }
 
     hideQualtricsElements() {
@@ -410,6 +508,7 @@ var DiceGame = class DiceGame {
             "#long-container" + diceId
         );
         rollBtn.disabled = true;
+        this.playRollSound();
         this.rollDice(random, dice);
         setTimeout(() => {
             this.changeCurrentScore(diceId);
@@ -492,6 +591,7 @@ var DiceGame = class DiceGame {
         this.GAME_DATA[gameId].totalWins = this.TOTAL_WINS;
 
         this.IS_STARTED = false;
+        this.playResultSound(isWin);
 
         setTimeout(() => {
             this.showSliderScreen(gameId);
@@ -588,6 +688,7 @@ var DiceGame = class DiceGame {
                 button.disabled = false;
                 reminder.style.display = "none";
                 clearTimeout(reminderTimeout);
+                this.playSliderReadySound();
             }
 
             const rect = sliderContainer.getBoundingClientRect();

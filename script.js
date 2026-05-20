@@ -8,6 +8,8 @@ var DiceGame = class DiceGame {
         this.CURRENT_GAME = {};
         this.GAME_DATA = {};
         this.IS_STARTED = false;
+        this.ENABLE_GAME_SOUNDS = ENABLE_GAME_SOUNDS;
+        this.audioContext = null;
         this.HEBREW = HEBREW;
         this.TEXT = this.HEBREW ? UI_TEXT.he : UI_TEXT.en;
         this.startTime = 0;
@@ -19,6 +21,86 @@ var DiceGame = class DiceGame {
         body.append(this.app);
         
         this.hideQualtricsElements();
+    }
+
+    getAudioContext() {
+        if (!this.ENABLE_GAME_SOUNDS) return null;
+
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return null;
+
+        if (!this.audioContext) {
+            this.audioContext = new AudioContextClass();
+        }
+
+        if (this.audioContext.state === "suspended") {
+            this.audioContext.resume();
+        }
+
+        return this.audioContext;
+    }
+
+    playTone(frequency, startTime, duration, volume, type = "sine") {
+        const audioContext = this.getAudioContext();
+        if (!audioContext) return;
+
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        const now = audioContext.currentTime + startTime;
+        const endTime = now + duration;
+
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, now);
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.exponentialRampToValueAtTime(volume, now + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.001, endTime);
+
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start(now);
+        oscillator.stop(endTime + 0.02);
+    }
+
+    playChanceSound(probability) {
+        if (!this.ENABLE_GAME_SOUNDS) return;
+
+        const chance = Math.max(0, Math.min(100, probability));
+
+        if (chance >= 80) {
+            this.playTone(659.25, 0, 0.08, 0.07);
+            this.playTone(783.99, 0.08, 0.09, 0.075);
+            this.playTone(987.77, 0.17, 0.12, 0.08);
+        } else if (chance >= 60) {
+            this.playTone(523.25, 0, 0.08, 0.065);
+            this.playTone(659.25, 0.09, 0.1, 0.07);
+        } else if (chance >= 40) {
+            this.playTone(440, 0, 0.07, 0.055, "triangle");
+            this.playTone(493.88, 0.08, 0.08, 0.055, "triangle");
+        } else if (chance >= 20) {
+            this.playTone(246.94, 0, 0.12, 0.075, "triangle");
+            this.playTone(220, 0.12, 0.12, 0.07, "triangle");
+        } else {
+            this.playTone(164.81, 0, 0.12, 0.08, "triangle");
+            this.playTone(146.83, 0.12, 0.12, 0.075, "triangle");
+            this.playTone(130.81, 0.24, 0.12, 0.07, "triangle");
+        }
+    }
+
+    playResultSound(isWin) {
+        if (!this.ENABLE_GAME_SOUNDS) return;
+
+        if (isWin) {
+            this.playTone(523.25, 0, 0.08, 0.1);
+            this.playTone(659.25, 0.08, 0.08, 0.11);
+            this.playTone(783.99, 0.16, 0.1, 0.12);
+            this.playTone(1046.5, 0.27, 0.16, 0.14);
+            this.playTone(1318.51, 0.37, 0.22, 0.1);
+        } else {
+            this.playTone(293.66, 0, 0.2, 0.1, "triangle");
+            this.playTone(246.94, 0.18, 0.24, 0.095, "triangle");
+            this.playTone(196, 0.4, 0.35, 0.085, "triangle");
+        }
     }
 
     hideQualtricsElements() {
@@ -435,6 +517,7 @@ var DiceGame = class DiceGame {
                 const currentGame = this.GAME_DATA[gameId];
                 currentGame.probabilities.push(Math.round(probability));
                 rollBtn.disabled = false;
+                this.playChanceSound(probability);
 
                 // Hide all other progress texts
                 document.querySelectorAll('.progress-text').forEach(el => {
@@ -492,6 +575,7 @@ var DiceGame = class DiceGame {
         this.GAME_DATA[gameId].totalWins = this.TOTAL_WINS;
 
         this.IS_STARTED = false;
+        this.playResultSound(isWin);
 
         setTimeout(() => {
             this.showSliderScreen(gameId);

@@ -78,9 +78,12 @@ var DiceGame = class DiceGame {
             this.playTone(440, 0, 0.07, 0.055, "triangle");
             this.playTone(493.88, 0.08, 0.08, 0.055, "triangle");
         } else if (chance >= 20) {
-            this.playTone(246.94, 0, 0.26, 0.075, "triangle");
+            this.playTone(246.94, 0, 0.12, 0.075, "triangle");
+            this.playTone(220, 0.12, 0.12, 0.07, "triangle");
         } else {
-            this.playTone(164.81, 0, 0.36, 0.08, "triangle");
+            this.playTone(164.81, 0, 0.12, 0.08, "triangle");
+            this.playTone(146.83, 0.12, 0.12, 0.075, "triangle");
+            this.playTone(130.81, 0.24, 0.12, 0.07, "triangle");
         }
     }
 

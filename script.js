@@ -62,42 +62,6 @@ var DiceGame = class DiceGame {
         oscillator.stop(endTime + 0.02);
     }
 
-    playRollSound() {
-        if (!this.ENABLE_GAME_SOUNDS) return;
-
-        const audioContext = this.getAudioContext();
-        if (!audioContext) return;
-
-        const bufferSize = audioContext.sampleRate * 0.22;
-        const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-        const output = buffer.getChannelData(0);
-
-        for (let i = 0; i < bufferSize; i++) {
-            const fade = 1 - i / bufferSize;
-            output[i] = (Math.random() * 2 - 1) * fade * 0.22;
-        }
-
-        const noise = audioContext.createBufferSource();
-        const filter = audioContext.createBiquadFilter();
-        const gain = audioContext.createGain();
-
-        noise.buffer = buffer;
-        filter.type = "bandpass";
-        filter.frequency.setValueAtTime(700, audioContext.currentTime);
-        filter.frequency.exponentialRampToValueAtTime(180, audioContext.currentTime + 0.22);
-        gain.gain.setValueAtTime(0.18, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.22);
-
-        noise.connect(filter);
-        filter.connect(gain);
-        gain.connect(audioContext.destination);
-        noise.start();
-        noise.stop(audioContext.currentTime + 0.24);
-
-        this.playTone(170, 0.03, 0.08, 0.05, "square");
-        this.playTone(125, 0.13, 0.08, 0.04, "square");
-    }
-
     playChanceSound(probability) {
         if (!this.ENABLE_GAME_SOUNDS) return;
 
@@ -114,11 +78,13 @@ var DiceGame = class DiceGame {
             this.playTone(440, 0, 0.07, 0.055, "triangle");
             this.playTone(493.88, 0.08, 0.08, 0.055, "triangle");
         } else if (chance >= 20) {
-            this.playTone(392, 0, 0.1, 0.06, "triangle");
-            this.playTone(329.63, 0.1, 0.12, 0.06, "triangle");
+            this.playTone(349.23, 0, 0.14, 0.075, "triangle");
+            this.playTone(293.66, 0.13, 0.18, 0.07, "triangle");
+            this.playTone(246.94, 0.3, 0.22, 0.065, "triangle");
         } else {
-            this.playTone(293.66, 0, 0.13, 0.07, "sawtooth");
-            this.playTone(220, 0.13, 0.18, 0.065, "sawtooth");
+            this.playTone(293.66, 0, 0.16, 0.08, "triangle");
+            this.playTone(233.08, 0.15, 0.22, 0.075, "triangle");
+            this.playTone(174.61, 0.36, 0.34, 0.07, "triangle");
         }
     }
 
@@ -527,7 +493,6 @@ var DiceGame = class DiceGame {
             "#long-container" + diceId
         );
         rollBtn.disabled = true;
-        this.playRollSound();
         this.rollDice(random, dice);
         setTimeout(() => {
             this.changeCurrentScore(diceId);

@@ -12,7 +12,7 @@ var GAME_9 = { diceResults: [5, 6, 2, 4, 2, 1] };
 
 var PRACTICE_GAME = { diceResults: [6, 1, 3, 4, 1, 2] };
 
-var PREPARED_GAME_LIST = [GAME_1, GAME_2, GAME_3, GAME_4, GAME_6, GAME_7, GAME_8, GAME_9];
+var PREPARED_GAME_LIST = [GAME_1, GAME_2, GAME_3, GAME_4, GAME_6, GAME_7];
 
 var HEBREW = true;
 var ENABLE_GAME_SOUNDS = true;

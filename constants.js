@@ -22,7 +22,7 @@ var PREPARED_GAME_LIST = [
 ];
 
 var HEBREW = true;
-var ENABLE_GAME_SOUNDS = true;
+var ENABLE_GAME_SOUNDS = false;
 
 var UI_TEXT = {
     en: {

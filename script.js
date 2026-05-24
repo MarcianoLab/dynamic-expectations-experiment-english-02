@@ -191,6 +191,7 @@ var DiceGame = class DiceGame {
         Object.keys(this.GAME_DATA).forEach((gameId) => {
             const game = this.GAME_DATA[gameId];
             summary[gameId] = {
+                serial_num: game.serial_num,
                 source: game.isPredefined,
                 diceResults: game.diceResults,
                 probabilities: game.probabilities,
@@ -265,6 +266,7 @@ var DiceGame = class DiceGame {
         const gameId = this.CURRENT_GAME.id;
         this.GAME_DATA[gameId] = {
             gameId: gameId,
+            serial_num: Number(gameId.replace("game", "")),
             isPredefined: this.CURRENT_GAME.isPredefined,
             diceResults: this.CURRENT_GAME.diceResults,
             probabilities: [],

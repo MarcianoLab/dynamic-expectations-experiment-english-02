@@ -205,6 +205,16 @@ var DiceGame = class DiceGame {
         return JSON.stringify(summary, null, 2);
     }
 
+    writeTrajectoryLogs(game) {
+        const sourceName = game.isPredefined;
+        if (!sourceName || sourceName === "Random") return;
+
+        Object.keys(game).forEach((data) => {
+            const fieldName = data === "duration" ? `${sourceName}_duration` : `${sourceName}-${data}`;
+            this.writeToLogs(fieldName, game[data]);
+        });
+    }
+
     initGameArray(isPractice) {
         if (isPractice) {
             this.GAME_LIST = [{ ...PRACTICE_GAME, id: "practice", isPredefined: "PRACTICE_GAME", sourceGameName: "PRACTICE_GAME" }];
@@ -778,6 +788,7 @@ var DiceGame = class DiceGame {
                 const fieldName = data === "duration" ? `${gameId}_duration` : `${gameId}-${data}`;
                 this.writeToLogs(fieldName, currentGame[data]);
             });
+            this.writeTrajectoryLogs(currentGame);
             if (this.GAME_LIST.length === 1) {
                 this.writeToLogs("totalWins", this.TOTAL_WINS);
                 this.writeToLogs("games_summary", this.createGamesSummary());

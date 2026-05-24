@@ -145,13 +145,13 @@ var DiceGame = class DiceGame {
 
     getPreparedGameName(game) {
         const preparedGameNames = [
-            { game: GAME_1, name: "GAME_1" },
-            { game: GAME_2, name: "GAME_2" },
-            { game: GAME_3, name: "GAME_3" },
-            { game: GAME_4, name: "GAME_4" },
+            { game: Trajectory_B_Lose, name: "Trajectory_B_Lose" },
+            { game: Trajectory_A_Lose, name: "Trajectory_A_Lose" },
+            { game: Trajectory_D_Win, name: "Trajectory_D_Win" },
+            { game: Trajectory_C_Win, name: "Trajectory_C_Win" },
             { game: GAME_5, name: "GAME_5" },
-            { game: GAME_6, name: "GAME_6" },
-            { game: GAME_7, name: "GAME_7" },
+            { game: Trajectory_B_Win, name: "Trajectory_B_Win" },
+            { game: Trajectory_A_Win, name: "Trajectory_A_Win" },
             { game: GAME_8, name: "GAME_8" },
             { game: GAME_9, name: "GAME_9" },
         ];
@@ -163,7 +163,7 @@ var DiceGame = class DiceGame {
         if (!firstGame || !secondGame) return false;
 
         const pair = [firstGame.sourceGameName, secondGame.sourceGameName].sort().join("-");
-        return pair === "GAME_1-GAME_6" || pair === "GAME_2-GAME_7";
+        return pair === "Trajectory_B_Lose-Trajectory_B_Win" || pair === "Trajectory_A_Lose-Trajectory_A_Win";
     }
 
     buildValidGameOrder(remainingGames, orderedGames = []) {

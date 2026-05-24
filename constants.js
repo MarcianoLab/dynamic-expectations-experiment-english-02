@@ -1,18 +1,25 @@
-var GAME_1 = { diceResults: [2, 2, 2, 6, 5, 3] };
-var GAME_2 = { diceResults: [4, 5, 5, 1, 2, 3] };
-var GAME_3 = { diceResults: [1, 4, 3, 5, 6, 6] };
-var GAME_4 = { diceResults: [5, 6, 2, 4, 2, 4] };
+var Trajectory_B_Lose = { diceResults: [2, 2, 2, 6, 5, 3] };
+var Trajectory_A_Lose = { diceResults: [4, 5, 5, 1, 2, 3] };
+var Trajectory_D_Win = { diceResults: [1, 4, 3, 5, 6, 6] };
+var Trajectory_C_Win = { diceResults: [5, 6, 2, 4, 2, 4] };
 
 var GAME_5 = { diceResults: [3, 4, 5, 1, 3, 6] };
 
-var GAME_6 = { diceResults: [2, 2, 2, 6, 5, 4] };
-var GAME_7 = { diceResults: [4, 5, 5, 1, 2, 6] };
+var Trajectory_B_Win = { diceResults: [2, 2, 2, 6, 5, 4] };
+var Trajectory_A_Win = { diceResults: [4, 5, 5, 1, 2, 6] };
 var GAME_8 = { diceResults: [1, 4, 3, 5, 6, 1] };
 var GAME_9 = { diceResults: [5, 6, 2, 4, 2, 1] };
 
 var PRACTICE_GAME = { diceResults: [6, 1, 3, 4, 1, 2] };
 
-var PREPARED_GAME_LIST = [GAME_1, GAME_2, GAME_3, GAME_4, GAME_6, GAME_7];
+var PREPARED_GAME_LIST = [
+    Trajectory_B_Lose,
+    Trajectory_A_Lose,
+    Trajectory_D_Win,
+    Trajectory_C_Win,
+    Trajectory_B_Win,
+    Trajectory_A_Win,
+];
 
 var HEBREW = true;
 var ENABLE_GAME_SOUNDS = true;

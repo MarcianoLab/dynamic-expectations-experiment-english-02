@@ -10,6 +10,7 @@ var DiceGame = class DiceGame {
         this.IS_STARTED = false;
         this.ENABLE_GAME_SOUNDS = ENABLE_GAME_SOUNDS;
         this.audioContext = null;
+        this.gameStartTime = 0;
         this.HEBREW = HEBREW;
         this.TEXT = this.HEBREW ? UI_TEXT.he : UI_TEXT.en;
         this.startTime = 0;
@@ -142,16 +143,79 @@ var DiceGame = class DiceGame {
         document.documentElement.dir = direction;
     }
 
+    getPreparedGameName(game) {
+        const preparedGameNames = [
+            { game: Trajectory_B_Lose, name: "Trajectory_B_Lose" },
+            { game: Trajectory_A_Lose, name: "Trajectory_A_Lose" },
+            { game: Trajectory_D_Win, name: "Trajectory_D_Win" },
+            { game: Trajectory_C_Win, name: "Trajectory_C_Win" },
+            { game: GAME_5, name: "GAME_5" },
+            { game: Trajectory_B_Win, name: "Trajectory_B_Win" },
+            { game: Trajectory_A_Win, name: "Trajectory_A_Win" },
+            { game: GAME_8, name: "GAME_8" },
+            { game: GAME_9, name: "GAME_9" },
+        ];
+        const preparedGame = preparedGameNames.find(({ game: preparedGameRef }) => preparedGameRef === game);
+        return preparedGame ? preparedGame.name : "Random";
+    }
+
+    isRestrictedGamePair(firstGame, secondGame) {
+        if (!firstGame || !secondGame) return false;
+
+        const pair = [firstGame.sourceGameName, secondGame.sourceGameName].sort().join("-");
+        return pair === "Trajectory_B_Lose-Trajectory_B_Win" || pair === "Trajectory_A_Lose-Trajectory_A_Win";
+    }
+
+    buildValidGameOrder(remainingGames, orderedGames = []) {
+        if (remainingGames.length === 0) return orderedGames;
+
+        const shuffledOptions = _.shuffle(remainingGames.map((game, index) => ({ game, index })));
+        for (const { game, index } of shuffledOptions) {
+            if (this.isRestrictedGamePair(orderedGames[orderedGames.length - 1], game)) continue;
+
+            const nextRemainingGames = remainingGames.filter((_, remainingIndex) => remainingIndex !== index);
+            const validOrder = this.buildValidGameOrder(nextRemainingGames, [...orderedGames, game]);
+            if (validOrder) return validOrder;
+        }
+
+        return null;
+    }
+
+    randomizeGameOrder(gameList) {
+        return this.buildValidGameOrder(gameList) || _.shuffle(gameList);
+    }
+
+    createGamesSummary() {
+        const summary = {};
+
+        Object.keys(this.GAME_DATA).forEach((gameId) => {
+            const game = this.GAME_DATA[gameId];
+            summary[gameId] = {
+                source: game.isPredefined,
+                diceResults: game.diceResults,
+                probabilities: game.probabilities,
+                sum: game.sum,
+                result: game.result,
+                duration: game.duration,
+                satisfaction: game.surveyResult,
+                satisfactionRt: game.surveyRt,
+            };
+        });
+
+        return JSON.stringify(summary, null, 2);
+    }
+
     initGameArray(isPractice) {
         if (isPractice) {
-            this.GAME_LIST = [{ ...PRACTICE_GAME, id: "practice", isPredefined: true }];
+            this.GAME_LIST = [{ ...PRACTICE_GAME, id: "practice", isPredefined: "PRACTICE_GAME", sourceGameName: "PRACTICE_GAME" }];
             this.CURRENT_GAME = this.GAME_LIST[0];
             return;
         }
 
         const preparedGames = PREPARED_GAME_LIST.map(game => ({
             ...game,
-            isPredefined: true
+            isPredefined: this.getPreparedGameName(game),
+            sourceGameName: this.getPreparedGameName(game),
         }));
         
         let randomGames = [];
@@ -160,11 +224,12 @@ var DiceGame = class DiceGame {
         if (numRandomGames > 0) {
             randomGames = this.createGameArray(numRandomGames, this.NUM_OF_DICE, preparedGames.length).map(game => ({
                 ...game,
-                isPredefined: false
+                isPredefined: "Random",
+                sourceGameName: "Random",
             }));
         }
 
-        let combinedList = _.shuffle([...preparedGames, ...randomGames]);
+        let combinedList = this.randomizeGameOrder([...preparedGames, ...randomGames]);
 
         this.GAME_LIST = combinedList.map((game, index) => ({
             ...game,
@@ -186,6 +251,7 @@ var DiceGame = class DiceGame {
             qualtricsElements.style.backgroundColor = "#dddddd";
         }
 
+        this.gameStartTime = performance.now();
         const gameId = this.CURRENT_GAME.id;
         this.GAME_DATA[gameId] = {
             gameId: gameId,
@@ -578,6 +644,7 @@ var DiceGame = class DiceGame {
         this.playResultSound(isWin);
 
         setTimeout(() => {
+            this.GAME_DATA[gameId].duration = Math.round(performance.now() - this.gameStartTime);
             this.showSliderScreen(gameId);
         }, 1500);
     }
@@ -708,10 +775,12 @@ var DiceGame = class DiceGame {
             currentGame.surveyResult = currentSliderValue;
             currentGame.surveyRt = rt;
             Object.keys(currentGame).forEach((data) => {
-                this.writeToLogs(`${gameId}-${data}`, currentGame[data]);
+                const fieldName = data === "duration" ? `${gameId}_duration` : `${gameId}-${data}`;
+                this.writeToLogs(fieldName, currentGame[data]);
             });
             if (this.GAME_LIST.length === 1) {
                 this.writeToLogs("totalWins", this.TOTAL_WINS);
+                this.writeToLogs("games_summary", this.createGamesSummary());
             }
             this.startNextGame();
         });

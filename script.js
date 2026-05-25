@@ -191,6 +191,7 @@ var DiceGame = class DiceGame {
         Object.keys(this.GAME_DATA).forEach((gameId) => {
             const game = this.GAME_DATA[gameId];
             summary[gameId] = {
+                serial_num: game.serial_num,
                 source: game.isPredefined,
                 diceResults: game.diceResults,
                 probabilities: game.probabilities,
@@ -203,6 +204,16 @@ var DiceGame = class DiceGame {
         });
 
         return JSON.stringify(summary, null, 2);
+    }
+
+    writeTrajectoryLogs(game) {
+        const sourceName = game.isPredefined;
+        if (!sourceName || sourceName === "Random") return;
+
+        Object.keys(game).forEach((data) => {
+            const fieldName = data === "duration" ? `${sourceName}_duration` : `${sourceName}-${data}`;
+            this.writeToLogs(fieldName, game[data]);
+        });
     }
 
     initGameArray(isPractice) {
@@ -255,6 +266,7 @@ var DiceGame = class DiceGame {
         const gameId = this.CURRENT_GAME.id;
         this.GAME_DATA[gameId] = {
             gameId: gameId,
+            serial_num: Number(gameId.replace("game", "")),
             isPredefined: this.CURRENT_GAME.isPredefined,
             diceResults: this.CURRENT_GAME.diceResults,
             probabilities: [],
@@ -778,6 +790,7 @@ var DiceGame = class DiceGame {
                 const fieldName = data === "duration" ? `${gameId}_duration` : `${gameId}-${data}`;
                 this.writeToLogs(fieldName, currentGame[data]);
             });
+            this.writeTrajectoryLogs(currentGame);
             if (this.GAME_LIST.length === 1) {
                 this.writeToLogs("totalWins", this.TOTAL_WINS);
                 this.writeToLogs("games_summary", this.createGamesSummary());

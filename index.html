@@ -19,9 +19,11 @@
         <!-- JS File -->
         <script src="script.js" type="text/javascript"></script>
         <script>
-            const actualGame = new DiceGame();
-            actualGame.initGameArray(false);
-            actualGame.showDiceScreen();
+            if (DiceGame.shouldAutoStart()) {
+                window.actualGame = new DiceGame();
+                window.actualGame.initGameArray(false);
+                window.actualGame.showDiceScreen();
+            }
         </script>
     </body>
 </html>

@@ -1,24 +1,4 @@
 var DiceGame = class DiceGame {
-    static shouldAutoStart() {
-        const href = window.location.href;
-        const host = window.location.hostname.toLowerCase();
-        const isQualtricsHost = host.includes("qualtrics");
-
-        if (!isQualtricsHost) return true;
-
-        const editorMarkers = [
-            "survey-builder",
-            "surveybuilder",
-            "survey-editor",
-            "surveyeditor",
-            "controlpanel",
-        ];
-        const isQualtricsEditor = editorMarkers.some(marker => href.toLowerCase().includes(marker));
-        if (isQualtricsEditor) return false;
-
-        return href.includes("/jfe/form/") || href.includes("/jfe/preview/") || href.includes("Q_CHL=preview");
-    }
-
     constructor() {
         this.NUM_OF_DICE = 6;
         this.NUM_OF_GAMES = 12;

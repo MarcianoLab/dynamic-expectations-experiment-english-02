@@ -13,6 +13,19 @@ var DiceGame = class DiceGame {
         this.gameStartTime = 0;
         this.HEBREW = HEBREW;
         this.TEXT = this.HEBREW ? UI_TEXT.he : UI_TEXT.en;
+        if (
+            typeof chance_loading_animation_enabled === "undefined" ||
+            typeof chance_loading_animation_duration_ms === "undefined" ||
+            typeof chances_text_glow_enabled === "undefined" ||
+            typeof chances_text_glow_duration_ms === "undefined"
+        ) {
+            console.error("Missing required configuration: chance_loading_animation_enabled, chance_loading_animation_duration_ms, chances_text_glow_enabled, or chances_text_glow_duration_ms must be defined in constants.js");
+            throw new Error("Missing chance configuration in constants.js");
+        }
+        this.TEXT_ANIMATION_ENABLED = chances_text_glow_enabled;
+        this.CHANCES_TEXT_GLOW_DURATION = chances_text_glow_duration_ms;
+        this.CHANCE_LOADING_ANIMATION_ENABLED = chance_loading_animation_enabled;
+        this.CHANCE_LOADING_DURATION = chance_loading_animation_duration_ms;
         this.startTime = 0;
         this.endTime = 0;
         this.app = this.createGeneralElement("div", ["app"], "app");
@@ -20,7 +33,7 @@ var DiceGame = class DiceGame {
 
         const body = document.querySelector("body");
         body.append(this.app);
-        
+
         this.hideQualtricsElements();
     }
 
@@ -113,7 +126,7 @@ var DiceGame = class DiceGame {
             "#Buttons",
             ".QuestionOuter .QuestionText"
         ];
-        
+
         elementsToHide.forEach(selector => {
             const element = document.querySelector(selector);
             if (element) {
@@ -228,10 +241,10 @@ var DiceGame = class DiceGame {
             isPredefined: this.getPreparedGameName(game),
             sourceGameName: this.getPreparedGameName(game),
         }));
-        
+
         let randomGames = [];
         const numRandomGames = this.NUM_OF_GAMES - preparedGames.length;
-        
+
         if (numRandomGames > 0) {
             randomGames = this.createGameArray(numRandomGames, this.NUM_OF_DICE, preparedGames.length).map(game => ({
                 ...game,
@@ -353,7 +366,7 @@ var DiceGame = class DiceGame {
             "#Buttons",
             ".QuestionOuter .QuestionText"
         ];
-        
+
         elementsToShow.forEach(selector => {
             const element = document.querySelector(selector);
             if (element) {
@@ -574,11 +587,11 @@ var DiceGame = class DiceGame {
         setTimeout(() => {
             this.changeCurrentScore(diceId);
             this.GAME_DATA[gameId][`dice${parseInt(diceId) + 1}-rt`] = rt;
-            this.setContainerDisable(diceId);
 
             const remainingDice = this.NUM_OF_DICE - parseInt(diceId) - 1;
 
             if (remainingDice <= 0) {
+                this.setContainerDisable(diceId);
                 const isWin = this.CURRENT_SUM >= 21;
                 this.GAME_DATA[gameId].probabilities.push(isWin ? 100 : 0);
                 this.finishGame(rollBtn, gameId, dice);
@@ -588,21 +601,17 @@ var DiceGame = class DiceGame {
 
                 const probability = this.calculateProbability(this.CURRENT_SUM, remainingDice) * 100;
                 const maxHeight = window.innerHeight * 0.0035;
-                void progress.offsetHeight;
-                progress.style.height = probability * maxHeight + "px";
-                progressText.textContent = Math.floor(probability) + "%";
 
                 const currentGame = this.GAME_DATA[gameId];
                 currentGame.probabilities.push(Math.round(probability));
-                rollBtn.disabled = false;
-                this.playChanceSound(probability);
 
-                // Hide all other progress texts
+                // Hide all other progress texts and spinners
                 document.querySelectorAll('.progress-text').forEach(el => {
                     if (el !== progressText) {
                         el.style.display = 'none';
                     }
                 });
+                document.querySelectorAll('.chance-spinner').forEach(el => el.remove());
 
                 // Hide all other chance texts
                 const currentChanceText = progress.querySelector('.chance-text');
@@ -611,6 +620,58 @@ var DiceGame = class DiceGame {
                         el.style.display = 'none';
                     }
                 });
+
+                const finishRollStep = () => {
+                    this.setContainerDisable(diceId);
+                    rollBtn.disabled = false;
+                };
+
+                const showChanceResult = () => {
+                    void progress.offsetHeight;
+                    progress.style.height = probability * maxHeight + "px";
+                    progressText.textContent = Math.floor(probability) + "%";
+                    progressText.style.display = "";
+
+                    this.playChanceSound(probability);
+
+                    // Yellow glow animation on the chance label and percentage text
+                    if (this.TEXT_ANIMATION_ENABLED) {
+                        rollBtn.disabled = true;
+                        [progressText, currentChanceText].forEach(el => {
+                            if (!el) return;
+                            el.classList.remove('progress-text-glow', 'chance-text-glow');
+                            void el.offsetWidth; // force reflow so animation restarts
+                            el.classList.add(progressText === el ? 'progress-text-glow' : 'chance-text-glow');
+                        });
+
+                        setTimeout(() => {
+                            finishRollStep();
+                        }, this.CHANCES_TEXT_GLOW_DURATION);
+                    } else {
+                        finishRollStep();
+                    }
+                };
+
+                if (this.CHANCE_LOADING_ANIMATION_ENABLED) {
+                    progress.style.height = "0px";
+                    progressText.style.display = "none";
+                    rollBtn.disabled = true;
+
+                    const textContainer = progress.querySelector('.text-container');
+                    const spinner = this.createGeneralElement("div", ["chance-spinner"], `spinner-${diceId}`);
+                    if (textContainer) {
+                        textContainer.appendChild(spinner);
+                    }
+
+                    setTimeout(() => {
+                        if (spinner && spinner.parentNode) {
+                            spinner.parentNode.removeChild(spinner);
+                        }
+                        showChanceResult();
+                    }, this.CHANCE_LOADING_DURATION);
+                } else {
+                    showChanceResult();
+                }
             }
 
         }, 425);
@@ -679,7 +740,7 @@ var DiceGame = class DiceGame {
     }
 
     createCustomSlider(gameId) {
-        
+
         const parent = this.createGeneralElement(
             "div",
             ["slider-parent"],

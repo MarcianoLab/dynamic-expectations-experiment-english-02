@@ -431,3 +431,43 @@ h2 {
 .modal-text {
     font: 700 32px "Montserrat", Arial;
 }
+
+@keyframes chanceGlow {
+    0% {
+        color: #ffe000;
+        text-shadow:
+            0 0 6px #ffe000,
+            0 0 14px #ffd000,
+            0 0 28px #ffb800;
+    }
+
+    100% {
+        color: #131210;
+        text-shadow: none;
+    }
+}
+
+.chance-text-glow,
+.progress-text-glow {
+    animation: chanceGlow 3s ease-out forwards;
+}
+
+.chance-spinner {
+    width: 24px;
+    height: 24px;
+    margin-top: 8px;
+    border: 3px solid rgba(27, 146, 224, 0.25);
+    border-top: 3px solid rgb(27, 146, 224);
+    border-radius: 50%;
+    animation: chanceSpin 0.8s linear infinite;
+    display: inline-block;
+}
+
+@keyframes chanceSpin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}

@@ -30,7 +30,7 @@ var chances_text_glow_duration_ms = 500;
 var chance_loading_animation_enabled = false;
 var chance_loading_animation_duration_ms = 2000;
 
-var chance_scale_enabled = false;
+var chance_scale_enabled = true;
 
 var UI_TEXT = {
     en: {

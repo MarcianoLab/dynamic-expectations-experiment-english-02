@@ -17,15 +17,18 @@ var DiceGame = class DiceGame {
             typeof chance_loading_animation_enabled === "undefined" ||
             typeof chance_loading_animation_duration_ms === "undefined" ||
             typeof chances_text_glow_enabled === "undefined" ||
-            typeof chances_text_glow_duration_ms === "undefined"
+            typeof chances_text_glow_duration_ms === "undefined" ||
+            typeof chance_scale_enabled === "undefined"
         ) {
-            console.error("Missing required configuration: chance_loading_animation_enabled, chance_loading_animation_duration_ms, chances_text_glow_enabled, or chances_text_glow_duration_ms must be defined in constants.js");
+            console.error("Missing required configuration: chance_loading_animation_enabled, chance_loading_animation_duration_ms, chances_text_glow_enabled, chances_text_glow_duration_ms, and chance_scale_enabled must be defined in constants.js");
             throw new Error("Missing chance configuration in constants.js");
         }
         this.TEXT_ANIMATION_ENABLED = chances_text_glow_enabled;
         this.CHANCES_TEXT_GLOW_DURATION = chances_text_glow_duration_ms;
         this.CHANCE_LOADING_ANIMATION_ENABLED = chance_loading_animation_enabled;
         this.CHANCE_LOADING_DURATION = chance_loading_animation_duration_ms;
+        this.CHANCE_SCALE_ENABLED = chance_scale_enabled;
+        this.scaleArrow = null;
         this.startTime = 0;
         this.endTime = 0;
         this.app = this.createGeneralElement("div", ["app"], "app");
@@ -35,6 +38,16 @@ var DiceGame = class DiceGame {
         body.append(this.app);
 
         this.hideQualtricsElements();
+
+        window.addEventListener("resize", () => {
+            document.querySelectorAll(".progress-wrapper").forEach((wrapper) => {
+                const prob = wrapper.dataset.probability;
+                const prog = wrapper.querySelector(".progress");
+                if (prob !== undefined && prog) {
+                    this.updateProgressBarHeight(wrapper, prog, parseFloat(prob));
+                }
+            });
+        });
     }
 
     getAudioContext() {
@@ -324,6 +337,15 @@ var DiceGame = class DiceGame {
             if (ind === 0) return;
             longContainer.classList.add("disable");
         });
+        if (this.CHANCE_SCALE_ENABLED) {
+            const scale = this.createChanceScale();
+            this.app.prepend(scale);
+            const initialProbability = this.calculateProbability(0, this.NUM_OF_DICE) * 100;
+            this.scaleArrow.style.transition = 'none';
+            this.updateScaleArrow(Math.round(initialProbability));
+            void this.scaleArrow.offsetHeight;
+            this.scaleArrow.style.transition = '';
+        }
         this.app.append(wideContainerDices);
         this.app.append(wideContainerBtn);
     }
@@ -428,7 +450,7 @@ var DiceGame = class DiceGame {
             );
             chanceText.innerHTML = this.TEXT.currentWinningChance;
             chanceText.style.fontSize = "17px";
-            chanceText.style.marginBottom = "10px"
+            chanceText.style.marginBottom = "10px";
 
             textContainer.appendChild(chanceText);
             textContainer.appendChild(progressText);
@@ -437,6 +459,64 @@ var DiceGame = class DiceGame {
         }
 
         return { progressWrapper, progress, progressText };
+    }
+
+    createChanceScale() {
+        const wrapper = this.createGeneralElement("div", ["chance-scale-wrapper"], "chance-scale");
+
+        const title = this.createGeneralElement("div", ["chance-scale-title"], "scale-title");
+        title.textContent = this.TEXT.scaleTitle;
+
+        const barArea = this.createGeneralElement("div", ["chance-scale-bar-area"], "scale-bar-area");
+
+        const arrowTrack = this.createGeneralElement("div", ["chance-scale-arrow-track"], "scale-arrow-track");
+        const arrow = this.createGeneralElement("div", ["chance-scale-arrow"], "scale-arrow");
+        arrowTrack.appendChild(arrow);
+
+        const bar = this.createGeneralElement("div", ["chance-scale-bar"], "scale-bar");
+
+        const ticksContainer = this.createGeneralElement("div", ["chance-scale-ticks"], "scale-ticks");
+        for (let i = 0; i <= 100; i += 10) {
+            const tickGroup = this.createGeneralElement("div", ["chance-scale-tick-group"], `scale-tick-group-${i}`);
+            tickGroup.style.left = `${i}%`;
+
+            const tickMark = this.createGeneralElement("div", ["chance-scale-tick-mark"], `scale-tick-${i}`);
+            const tickLabel = this.createGeneralElement("span", ["chance-scale-tick-label"], `scale-label-${i}`);
+            tickLabel.textContent = i;
+
+            tickGroup.appendChild(tickMark);
+            tickGroup.appendChild(tickLabel);
+            ticksContainer.appendChild(tickGroup);
+        }
+
+        barArea.appendChild(arrowTrack);
+        barArea.appendChild(bar);
+        barArea.appendChild(ticksContainer);
+
+        wrapper.appendChild(title);
+        wrapper.appendChild(barArea);
+
+        this.scaleArrow = arrow;
+        return wrapper;
+    }
+
+    updateScaleArrow(probability) {
+        if (!this.scaleArrow) return;
+        this.scaleArrow.style.left = `${probability}%`;
+    }
+
+    updateProgressBarHeight(progressWrapper, progress, probability) {
+        if (!progressWrapper || !progress) return;
+        progressWrapper.dataset.probability = probability;
+        const scaleEl = this.CHANCE_SCALE_ENABLED ? document.querySelector('.chance-scale-wrapper') : null;
+        const scaleBottom = scaleEl ? scaleEl.getBoundingClientRect().bottom : 0;
+        const barBottom = progressWrapper.getBoundingClientRect().bottom || (window.innerHeight * 0.7);
+        const textContainer = progress.querySelector('.text-container');
+        const textHeight = textContainer ? textContainer.offsetHeight : 45;
+        const availableHeight = Math.max(20, barBottom - scaleBottom - textHeight - 20);
+        const standardMaxHeight = window.innerHeight * 0.35;
+        const maxProgressHeight = Math.max(15, Math.min(standardMaxHeight, availableHeight));
+        progress.style.height = ((probability / 100) * maxProgressHeight) + "px";
     }
 
     createDiceElement(id) {
@@ -555,9 +635,10 @@ var DiceGame = class DiceGame {
         }
 
         const initialProbability = this.calculateProbability(0, this.NUM_OF_DICE) * 100;
-        const maxHeight = window.innerHeight * 0.0035;
-        progress.style.height = initialProbability * maxHeight + "px";
         progressText.textContent = Math.round(initialProbability) + "%";
+        requestAnimationFrame(() => {
+            this.updateProgressBarHeight(progressWrapper, progress, initialProbability);
+        });
 
         return longContainer;
     }
@@ -600,7 +681,6 @@ var DiceGame = class DiceGame {
                 longDiceContainer.prepend(progressWrapper);
 
                 const probability = this.calculateProbability(this.CURRENT_SUM, remainingDice) * 100;
-                const maxHeight = window.innerHeight * 0.0035;
 
                 const currentGame = this.GAME_DATA[gameId];
                 currentGame.probabilities.push(Math.round(probability));
@@ -628,9 +708,14 @@ var DiceGame = class DiceGame {
 
                 const showChanceResult = () => {
                     void progress.offsetHeight;
-                    progress.style.height = probability * maxHeight + "px";
                     progressText.textContent = Math.floor(probability) + "%";
                     progressText.style.display = "";
+
+                    this.updateProgressBarHeight(progressWrapper, progress, probability);
+
+                    if (this.CHANCE_SCALE_ENABLED) {
+                        this.updateScaleArrow(probability);
+                    }
 
                     this.playChanceSound(probability);
 
@@ -652,7 +737,7 @@ var DiceGame = class DiceGame {
                     }
                 };
 
-                if (this.CHANCE_LOADING_ANIMATION_ENABLED) {
+                if (this.CHANCE_LOADING_ANIMATION_ENABLED && !this.CHANCE_SCALE_ENABLED) {
                     progress.style.height = "0px";
                     progressText.style.display = "none";
                     rollBtn.disabled = true;
@@ -708,6 +793,10 @@ var DiceGame = class DiceGame {
         // Hide all progress texts and chance texts
         document.querySelectorAll('.progress-text').forEach(el => el.style.display = 'none');
         document.querySelectorAll('.chance-text').forEach(el => el.style.display = 'none');
+
+        // Hide scale when game ends
+        const scaleEl = document.getElementById('chance-scale');
+        if (scaleEl) scaleEl.style.display = 'none';
 
         this.GAME_DATA[gameId].sum = this.CURRENT_SUM;
         this.GAME_DATA[gameId].result = isWin ? "win" : "loss";

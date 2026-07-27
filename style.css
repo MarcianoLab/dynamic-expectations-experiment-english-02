@@ -33,10 +33,25 @@ h2 {
     flex-direction: column;
     justify-content: flex-end;
     direction: ltr;
+    position: relative;
 }
 
 .app.slider-page {
     justify-content: center;
+}
+
+/* ===== Chance Scale ===== */
+
+.chance-scale-wrapper {
+    width: 80%;
+    max-width: 900px;
+    position: relative;
+    margin: auto auto auto auto;
+    padding-top: clamp(10px, 2vh, 25px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 100;
 }
 
 .normal-container {
@@ -45,10 +60,10 @@ h2 {
     align-items: center;
     justify-content: center;
     width: clamp(30px, 12vw, 180px);
-    padding: clamp(1rem, 3vh, 2rem) 0;
+    padding: clamp(0.5rem, 2vh, 2rem) 0;
     border-radius: 2vw;
     background: #fff;
-    margin-bottom: 3vh;
+    margin-bottom: clamp(4px, 2vh, 20px);
     box-shadow: 0 0 2vw rgba(0, 0, 0, 0.2);
 }
 
@@ -174,7 +189,7 @@ h2 {
 
 .progress-wrapper {
     width: 100%;
-    height: clamp(80px, 30vh, 150px);
+    height: clamp(80px, 34vh, 300px);
     margin-inline: auto;
     position: relative;
     overflow: visible;
@@ -186,7 +201,7 @@ h2 {
 
 .progress {
     width: 70%;
-    height: 0%;
+    height: 0px;
     position: absolute;
     bottom: 0;
     border-radius: clamp(6px, 1vw, 15px);
@@ -194,10 +209,11 @@ h2 {
     align-items: center;
     text-align: center;
     justify-content: center;
+    transition: height 0.3s ease;
 }
 
 .progress-text {
-    font: 700 clamp(14px, 1.8vw, 22px) "Montserrat", Arial, sans-serif;
+    font: 700 clamp(12px, 1.4vw, 18px) "Montserrat", Arial, sans-serif;
     color: #131210;
     text-shadow: 0 0 clamp(1px, 0.3vw, 3px) white;
     z-index: 2;
@@ -244,14 +260,16 @@ h2 {
     align-items: center;
     justify-content: center;
     position: absolute;
-    top: -100px;
-    left: 0;
-    right: 0;
-    padding-bottom: 10px;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    padding-bottom: 4px;
+    z-index: 2;
 }
 
 .chance-text {
-    font: 700 20px "Montserrat", Arial;
+    font: 700 clamp(12px, 1.3vw, 17px) "Montserrat", Arial;
     font-weight: bold;
     color: #131210;
     white-space: nowrap;
@@ -467,7 +485,100 @@ h2 {
     0% {
         transform: rotate(0deg);
     }
+
     100% {
         transform: rotate(360deg);
     }
+}
+
+
+
+.chance-scale-title {
+    font: 700 clamp(16px, 2vw, 24px) "Montserrat", Arial, sans-serif;
+    color: #131210;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.chance-scale-bar-area {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.chance-scale-arrow-track {
+    position: relative;
+    width: 100%;
+    height: 18px;
+}
+
+.chance-scale-arrow {
+    position: absolute;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 14px solid #FF0000;
+    transition: left 0.4s ease-out;
+    z-index: 5;
+    left: 0%;
+}
+
+.chance-scale-bar {
+    width: 100%;
+    height: 22px;
+    border-radius: 11px;
+    background: linear-gradient(to right,
+            #8B0000 0%,
+            #CC0000 10%,
+            #FF0000 20%,
+            #FF4500 30%,
+            #FF8C00 37%,
+            #FFD700 47%,
+            #FFFF00 52%,
+            #ADFF2F 60%,
+            #7CFC00 70%,
+            #32CD32 80%,
+            #228B22 90%,
+            #006400 100%);
+}
+
+.chance-scale-ticks {
+    position: relative;
+    width: 100%;
+    height: 30px;
+    margin-top: 2px;
+}
+
+.chance-scale-tick-group {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translateX(-50%);
+}
+
+.chance-scale-tick-group:first-child {
+    transform: translateX(0);
+}
+
+.chance-scale-tick-group:last-child {
+    transform: translateX(-100%);
+}
+
+.chance-scale-tick-mark {
+    width: 2px;
+    height: 8px;
+    background-color: #131210;
+}
+
+.chance-scale-tick-label {
+    font: 400 clamp(10px, 1.2vw, 14px) "Montserrat", Arial, sans-serif;
+    color: #131210;
+    margin-top: 2px;
+    user-select: none;
 }

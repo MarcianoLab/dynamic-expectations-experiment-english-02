@@ -24,7 +24,7 @@ var PREPARED_GAME_LIST = [
 var HEBREW = true;
 var ENABLE_GAME_SOUNDS = false;
 
-var chances_text_glow_enabled = window.chances_text_glow_enabled || true;
+var chances_text_glow_enabled = window.chances_text_glow_enabled || false;
 var chances_text_glow_duration_ms = 500;
 
 var chance_loading_animation_enabled = window.chance_loading_animation_enabled || false;

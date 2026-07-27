@@ -24,13 +24,14 @@ var PREPARED_GAME_LIST = [
 var HEBREW = true;
 var ENABLE_GAME_SOUNDS = false;
 
-var chances_text_glow_enabled = false;
+var chances_text_glow_enabled = window.chances_text_glow_enabled || false;
 var chances_text_glow_duration_ms = 500;
 
-var chance_loading_animation_enabled = false;
+var chance_loading_animation_enabled = window.chance_loading_animation_enabled || false;
 var chance_loading_animation_duration_ms = 2000;
 
-var chance_scale_enabled = false;
+var chance_scale_enabled = window.chance_scale_enabled || false;
+var extended_satisfaction_scale_enabled = window.extended_satisfaction_scale_enabled || false;
 
 var UI_TEXT = {
     en: {
@@ -41,6 +42,8 @@ var UI_TEXT = {
         youLose: "You Lose!",
         satisfiedQuestion: "How satisfied are you at this moment?",
         veryDissatisfied: "Very dissatisfied",
+        dissatisfied: "Dissatisfied",
+        satisfied: "Satisfied",
         verySatisfied: "Very satisfied",
         continue: "Continue",
         sliderReminder: "Please move the slider according to the instructions",
@@ -54,6 +57,8 @@ var UI_TEXT = {
         youLose: "הפסדת!",
         satisfiedQuestion: "כמה את/ה מרוצה כרגע?",
         veryDissatisfied: "מאוד לא מרוצה",
+        dissatisfied: "לא כל כך מרוצה",
+        satisfied: "מרוצה",
         verySatisfied: "מאוד מרוצה",
         continue: "המשך/י",
         sliderReminder: "גרור/י את המחוון למיקום המתאים",

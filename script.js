@@ -18,16 +18,18 @@ var DiceGame = class DiceGame {
             typeof chance_loading_animation_duration_ms === "undefined" ||
             typeof chances_text_glow_enabled === "undefined" ||
             typeof chances_text_glow_duration_ms === "undefined" ||
-            typeof chance_scale_enabled === "undefined"
+            typeof chance_scale_enabled === "undefined" ||
+            typeof extended_satisfaction_scale_enabled === "undefined"
         ) {
-            console.error("Missing required configuration: chance_loading_animation_enabled, chance_loading_animation_duration_ms, chances_text_glow_enabled, chances_text_glow_duration_ms, and chance_scale_enabled must be defined in constants.js");
-            throw new Error("Missing chance configuration in constants.js");
+            console.error("Missing required configuration: chance_loading_animation_enabled, chance_loading_animation_duration_ms, chances_text_glow_enabled, chances_text_glow_duration_ms, chance_scale_enabled, and extended_satisfaction_scale_enabled must be defined in constants.js");
+            throw new Error("Missing configuration in constants.js");
         }
         this.TEXT_ANIMATION_ENABLED = chances_text_glow_enabled;
         this.CHANCES_TEXT_GLOW_DURATION = chances_text_glow_duration_ms;
         this.CHANCE_LOADING_ANIMATION_ENABLED = chance_loading_animation_enabled;
         this.CHANCE_LOADING_DURATION = chance_loading_animation_duration_ms;
         this.CHANCE_SCALE_ENABLED = chance_scale_enabled;
+        this.EXTENDED_SATISFACTION_SCALE_ENABLED = extended_satisfaction_scale_enabled;
         this.scaleArrow = null;
         this.startTime = 0;
         this.endTime = 0;
@@ -854,10 +856,22 @@ var DiceGame = class DiceGame {
             track,
             this.createCircle("black", "0%"),
             this.createLabel(this.TEXT.veryDissatisfied, "0%"),
+        ];
+
+        if (this.EXTENDED_SATISFACTION_SCALE_ENABLED) {
+            sliderElements.push(
+                this.createCircle("black", "33.33%"),
+                this.createLabel(this.TEXT.dissatisfied, "33.33%"),
+                this.createCircle("black", "66.67%"),
+                this.createLabel(this.TEXT.satisfied, "66.67%")
+            );
+        }
+
+        sliderElements.push(
             this.createCircle("black", "100%"),
             this.createLabel(this.TEXT.verySatisfied, "100%"),
-            thumb,
-        ];
+            thumb
+        );
 
         sliderElements.forEach((element) => {
             sliderContainer.appendChild(element);

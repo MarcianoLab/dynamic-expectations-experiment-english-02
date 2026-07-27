@@ -27,7 +27,7 @@ var ENABLE_GAME_SOUNDS = false;
 var chances_text_glow_enabled = false;
 var chances_text_glow_duration_ms = 500;
 
-var chance_loading_animation_enabled = true;
+var chance_loading_animation_enabled = false;
 var chance_loading_animation_duration_ms = 2000;
 
 var UI_TEXT = {

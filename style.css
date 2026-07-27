@@ -209,7 +209,6 @@ h2 {
     align-items: center;
     text-align: center;
     justify-content: center;
-    transition: height 0.3s ease;
 }
 
 .progress-text {

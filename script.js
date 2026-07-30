@@ -30,6 +30,7 @@ var DiceGame = class DiceGame {
         this.CHANCE_LOADING_DURATION = chance_loading_animation_duration_ms;
         this.CHANCE_SCALE_ENABLED = chance_scale_enabled;
         this.EXTENDED_SATISFACTION_SCALE_ENABLED = extended_satisfaction_scale_enabled;
+        this.FINAL_CHANCE_ANIMATION_DURATION = typeof final_chance_animation_duration_ms !== 'undefined' ? final_chance_animation_duration_ms : 1500;
         this.scaleArrow = null;
         this.startTime = 0;
         this.endTime = 0;
@@ -439,6 +440,10 @@ var DiceGame = class DiceGame {
         progressWrapper.appendChild(progress);
         progress.appendChild(progressText);
 
+        if (this.CHANCE_SCALE_ENABLED) {
+            progressWrapper.style.display = "none";
+        }
+
         if (showChanceText) {
             const textContainer = this.createGeneralElement(
                 "div",
@@ -478,18 +483,36 @@ var DiceGame = class DiceGame {
         const bar = this.createGeneralElement("div", ["chance-scale-bar"], "scale-bar");
 
         const ticksContainer = this.createGeneralElement("div", ["chance-scale-ticks"], "scale-ticks");
+        const tickGroups = [];
+
         for (let i = 0; i <= 100; i += 10) {
             const tickGroup = this.createGeneralElement("div", ["chance-scale-tick-group"], `scale-tick-group-${i}`);
             tickGroup.style.left = `${i}%`;
 
             const tickMark = this.createGeneralElement("div", ["chance-scale-tick-mark"], `scale-tick-${i}`);
             const tickLabel = this.createGeneralElement("span", ["chance-scale-tick-label"], `scale-label-${i}`);
-            tickLabel.textContent = i;
+            tickLabel.textContent = i + "%";
 
             tickGroup.appendChild(tickMark);
             tickGroup.appendChild(tickLabel);
             ticksContainer.appendChild(tickGroup);
+
+            tickGroups.push({ element: tickGroup, percentage: i });
         }
+
+        const resizeObserver = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                const width = entry.contentRect.width;
+                const dpr = window.devicePixelRatio || 1;
+                tickGroups.forEach(tick => {
+                    // Snap to physical pixel boundaries by rounding in physical space first
+                    const physicalPos = Math.round((tick.percentage / 100) * width * dpr);
+                    const cssPos = physicalPos / dpr;
+                    tick.element.style.left = `${cssPos}px`;
+                });
+            }
+        });
+        resizeObserver.observe(ticksContainer);
 
         barArea.appendChild(arrowTrack);
         barArea.appendChild(bar);
@@ -790,15 +813,28 @@ var DiceGame = class DiceGame {
         resultElement.innerText = resultText;
         resultElement.style.color = resultTextColor;
 
-        longDiceContainer.prepend(resultElement);
+        if (this.CHANCE_SCALE_ENABLED) {
+            const scaleWrapper = document.getElementById('chance-scale');
+            if (scaleWrapper) {
+                resultElement.style.position = 'absolute';
+                resultElement.style.bottom = '100%';
+                resultElement.style.margin = '0';
+                resultElement.style.marginBottom = '5px';
+                resultElement.style.width = 'max-content';
+                scaleWrapper.prepend(resultElement);
+            }
+        } else {
+            longDiceContainer.prepend(resultElement);
+        }
 
         // Hide all progress texts and chance texts
         document.querySelectorAll('.progress-text').forEach(el => el.style.display = 'none');
         document.querySelectorAll('.chance-text').forEach(el => el.style.display = 'none');
 
-        // Hide scale when game ends
-        const scaleEl = document.getElementById('chance-scale');
-        if (scaleEl) scaleEl.style.display = 'none';
+        // Move arrow to 0 or 100
+        if (this.CHANCE_SCALE_ENABLED) {
+            this.updateScaleArrow(isWin ? 100 : 0);
+        }
 
         this.GAME_DATA[gameId].sum = this.CURRENT_SUM;
         this.GAME_DATA[gameId].result = isWin ? "win" : "loss";
@@ -810,7 +846,7 @@ var DiceGame = class DiceGame {
         setTimeout(() => {
             this.GAME_DATA[gameId].duration = Math.round(performance.now() - this.gameStartTime);
             this.showSliderScreen(gameId);
-        }, 1500);
+        }, this.FINAL_CHANCE_ANIMATION_DURATION);
     }
 
     createCircle(color, left, isMovable = false) {

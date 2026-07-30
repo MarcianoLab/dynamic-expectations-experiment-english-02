@@ -45,8 +45,10 @@ h2 {
 .chance-scale-wrapper {
     width: 80%;
     max-width: 900px;
-    position: relative;
-    margin: auto auto auto auto;
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     padding-top: clamp(10px, 2vh, 25px);
     display: flex;
     flex-direction: column;
@@ -508,7 +510,9 @@ h2 {
 
 .chance-scale-arrow-track {
     position: relative;
-    width: 100%;
+    width: calc(100% - 22px);
+    margin-left: 11px;
+    margin-right: 11px;
     height: 18px;
 }
 
@@ -547,7 +551,9 @@ h2 {
 
 .chance-scale-ticks {
     position: relative;
-    width: 100%;
+    width: calc(100% - 22px);
+    margin-left: 11px;
+    margin-right: 11px;
     height: 30px;
     margin-top: 2px;
 }
@@ -556,27 +562,22 @@ h2 {
     position: absolute;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    transform: translateX(-50%);
-}
-
-.chance-scale-tick-group:first-child {
-    transform: translateX(0);
-}
-
-.chance-scale-tick-group:last-child {
-    transform: translateX(-100%);
+    /* no align-items center, no transform */
 }
 
 .chance-scale-tick-mark {
     width: 2px;
     height: 8px;
     background-color: #131210;
+    margin-left: -2px;
 }
 
 .chance-scale-tick-label {
-    font: 400 clamp(10px, 1.2vw, 14px) "Montserrat", Arial, sans-serif;
+    position: absolute;
+    top: 10px;
+    left: 0;
+    transform: translateX(-50%);
+    font: 400 clamp(12px, 1.5vw, 17px) "Montserrat", Arial, sans-serif;
     color: #131210;
-    margin-top: 2px;
     user-select: none;
 }

@@ -32,6 +32,7 @@ var chance_loading_animation_duration_ms = 2000;
 
 var chance_scale_enabled = window.chance_scale_enabled || false;
 var extended_satisfaction_scale_enabled = window.extended_satisfaction_scale_enabled || false;
+var final_chance_animation_duration_ms = window.final_chance_animation_duration_ms || 1500;
 
 var UI_TEXT = {
     en: {

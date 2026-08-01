@@ -345,7 +345,7 @@ var DiceGame = class DiceGame {
             this.app.prepend(scale);
             const initialProbability = this.calculateProbability(0, this.NUM_OF_DICE) * 100;
             this.scaleArrow.style.transition = 'none';
-            this.updateScaleArrow(Math.round(initialProbability));
+            this.updateScaleArrow(Math.round(initialProbability), false);
             void this.scaleArrow.offsetHeight;
             this.scaleArrow.style.transition = '';
         }
@@ -478,6 +478,9 @@ var DiceGame = class DiceGame {
 
         const arrowTrack = this.createGeneralElement("div", ["chance-scale-arrow-track"], "scale-arrow-track");
         const arrow = this.createGeneralElement("div", ["chance-scale-arrow"], "scale-arrow");
+        const arrowLabel = this.createGeneralElement("div", ["chance-scale-arrow-label"], "scale-arrow-label");
+        arrowLabel.textContent = "0%";
+        arrow.appendChild(arrowLabel);
         arrowTrack.appendChild(arrow);
 
         const bar = this.createGeneralElement("div", ["chance-scale-bar"], "scale-bar");
@@ -522,12 +525,48 @@ var DiceGame = class DiceGame {
         wrapper.appendChild(barArea);
 
         this.scaleArrow = arrow;
+        this.scaleArrowLabel = arrowLabel;
+        this.scaleArrowCurrentValue = 0;
         return wrapper;
     }
 
-    updateScaleArrow(probability) {
+    updateScaleArrow(probability, animate = true) {
         if (!this.scaleArrow) return;
         this.scaleArrow.style.left = `${probability}%`;
+
+        if (!this.scaleArrowLabel) return;
+
+        const to = Math.round(probability);
+
+        if (!animate) {
+            this.scaleArrowLabel.textContent = to + "%";
+            this.scaleArrowCurrentValue = to;
+            return;
+        }
+
+        const from = this.scaleArrowCurrentValue !== undefined ? this.scaleArrowCurrentValue : 0;
+        const duration = 400; // ms — matches the CSS transition duration
+        const startTime = performance.now();
+
+        // Cancel any in-progress animation
+        if (this._arrowLabelRaf) cancelAnimationFrame(this._arrowLabelRaf);
+
+        const animationStep = (now) => {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            // ease-out cubic to match CSS ease-out feel
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const current = Math.round(from + (to - from) * eased);
+            this.scaleArrowLabel.textContent = current + "%";
+            if (progress < 1) {
+                this._arrowLabelRaf = requestAnimationFrame(animationStep);
+            } else {
+                this.scaleArrowCurrentValue = to;
+                this._arrowLabelRaf = null;
+            }
+        };
+
+        this._arrowLabelRaf = requestAnimationFrame(animationStep);
     }
 
     updateProgressBarHeight(progressWrapper, progress, probability) {
@@ -794,10 +833,10 @@ var DiceGame = class DiceGame {
         if (isWin) {
             this.TOTAL_WINS += 1;
             resultText = this.TEXT.youWon;
-            resultTextColor = "#012060"
+            resultTextColor = this.CHANCE_SCALE_ENABLED ? "green" : "#012060";
         } else {
             resultText = this.TEXT.youLose;
-            resultTextColor = "#012060"
+            resultTextColor = this.CHANCE_SCALE_ENABLED ? "red" : "#012060";
         }
 
         const diceId = dice.id.slice(-1);
@@ -819,7 +858,7 @@ var DiceGame = class DiceGame {
                 resultElement.style.position = 'absolute';
                 resultElement.style.bottom = '100%';
                 resultElement.style.margin = '0';
-                resultElement.style.marginBottom = '5px';
+                resultElement.style.marginBottom = '20px';
                 resultElement.style.width = 'max-content';
                 scaleWrapper.prepend(resultElement);
             }

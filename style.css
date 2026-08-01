@@ -46,7 +46,7 @@ h2 {
     width: 80%;
     max-width: 900px;
     position: absolute;
-    top: 30%;
+    top: 40%;
     left: 50%;
     transform: translate(-50%, -50%);
     padding-top: clamp(10px, 2vh, 25px);
@@ -513,7 +513,7 @@ h2 {
     width: calc(100% - 22px);
     margin-left: 11px;
     margin-right: 11px;
-    height: 18px;
+    height: 36px;
 }
 
 .chance-scale-arrow {
@@ -528,6 +528,18 @@ h2 {
     transition: left 0.4s ease-out;
     z-index: 5;
     left: 0%;
+}
+
+.chance-scale-arrow-label {
+    position: absolute;
+    bottom: 18px;
+    left: 40%;
+    transform: translateX(-40%);
+    font: 700 clamp(12px, 1.4vw, 16px) "Montserrat", Arial, sans-serif;
+    color: #000000;
+    white-space: nowrap;
+    user-select: none;
+    pointer-events: none;
 }
 
 .chance-scale-bar {

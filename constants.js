@@ -21,7 +21,7 @@ var PREPARED_GAME_LIST = [
     Trajectory_A_Win,
 ];
 
-var HEBREW = true;
+var HEBREW = false;
 var ENABLE_GAME_SOUNDS = false;
 
 var chances_text_glow_enabled = window.chances_text_glow_enabled || false;
@@ -30,7 +30,7 @@ var chances_text_glow_duration_ms = 500;
 var chance_loading_animation_enabled = window.chance_loading_animation_enabled || false;
 var chance_loading_animation_duration_ms = 2000;
 
-var chance_scale_enabled = window.chance_scale_enabled || false;
+var chance_scale_enabled = window.chance_scale_enabled || true;
 var extended_satisfaction_scale_enabled = window.extended_satisfaction_scale_enabled || false;
 var final_chance_animation_duration_ms = window.final_chance_animation_duration_ms || 1500;
 
